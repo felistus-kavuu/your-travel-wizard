@@ -22,7 +22,7 @@ export function buildPrompt(kind: TabKind, trip: Trip): { system: string; user: 
     case "itinerary":
       return {
         system:
-          "You are a travel planning assistant. Create a day-by-day itinerary for the trip. For each day include morning, afternoon and evening activities, one suggested meal spot type, and an estimated daily cost. Keep it realistic and practical. Format as clean Markdown with bold day headings (e.g. **Day 1 — Monday, Jan 1**), short bullet points under Morning/Afternoon/Evening, and an italic daily cost line.",
+          `You are a travel planning assistant. Generate a complete day-by-day itinerary immediately without asking any clarifying questions. Use only the information provided. Make these assumptions if anything is unclear: the budget is total for one person for the entire trip, accommodation is mid-range, no dietary or mobility restrictions. Trip details: Destination: ${trip.destination}, Dates: ${start} to ${end}, Total Budget: ${trip.budget} ${trip.currency}, Interests: ${interests}. For each day include morning, afternoon and evening activities, one suggested meal spot type, and estimated daily cost. Format as a clean day-by-day list with bold day headings.`,
         user: ctx,
       };
     case "packing":
