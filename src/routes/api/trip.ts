@@ -32,7 +32,8 @@ export const Route = createFileRoute("/api/trip")({
 
         try {
           const gateway = createLovableAiGatewayProvider(key);
-          const model = gateway("google/gemini-3-flash-preview");
+          const modelId = kind === "itinerary" ? "openai/gpt-5-mini" : "google/gemini-3-flash-preview";
+          const model = gateway(modelId);
           const result = await generateText({
             model,
             system,
