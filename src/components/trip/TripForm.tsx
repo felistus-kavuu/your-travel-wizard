@@ -27,6 +27,7 @@ export function TripForm() {
   const [budget, setBudget] = useState<string>("");
   const [currency, setCurrency] = useState<Currency>("USD");
   const [interests, setInterests] = useState<Interest[]>([]);
+  const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toISO = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : "");
@@ -40,6 +41,7 @@ export function TripForm() {
       budget: Number(budget),
       currency,
       interests,
+      email: email.trim() || undefined,
     });
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
@@ -165,6 +167,19 @@ export function TripForm() {
           <Label>Interests</Label>
           <InterestPills value={interests} onChange={setInterests} />
           {errors.interests && <p className="text-sm text-destructive">{errors.interests}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email (optional)</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email to receive your trip plan."
+            className="h-12"
+          />
+          {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
         </div>
 
         <Button

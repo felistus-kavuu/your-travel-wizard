@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Backpack, CalendarDays, Globe, Plane, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TripSummaryBar } from "@/components/trip/TripSummaryBar";
 import { TabContent } from "@/components/trip/TabContent";
 import { clearTrip, loadTrip } from "@/lib/trip-storage";
-import type { Trip } from "@/lib/trip-types";
+import type { TabKind, Trip } from "@/lib/trip-types";
+
+const ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/27514763/42r20qz/";
+
+async function fetchTab(kind: TabKind, trip: Trip): Promise<string> {
+  const res = await fetch("/api/trip", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, trip }),
+  });
+  if (!res.ok) throw new Error("Failed");
+  const data = (await res.json()) as { text: string };
+  return data.text;
+}
 
 export const Route = createFileRoute("/trip")({
   head: () => ({
@@ -38,6 +52,53 @@ function TripPage() {
     clearTrip();
     navigate({ to: "/" });
   };
+
+  return <TripPageInner trip={trip} onReset={onReset} />;
+}
+
+function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
+  const tripKey = `${trip.destination}|${trip.startDate}|${trip.endDate}|${trip.budget}|${trip.currency}|${trip.interests.join(",")}`;
+  const kinds: TabKind[] = ["itinerary", "packing", "budget", "culture"];
+  const results = useQueries({
+    queries: kinds.map((k) => ({
+      queryKey: ["trip", k, tripKey],
+      queryFn: () => fetchTab(k, trip),
+      staleTime: Infinity,
+      retry: 0,
+    })),
+  });
+  const allDone = results.every((r) => r.isSuccess);
+  const sentRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!allDone) return;
+    if (!trip.email) return;
+    const sendKey = `${trip.email}|${tripKey}`;
+    if (sentRef.current === sendKey) return;
+    sentRef.current = sendKey;
+    const [itinerary, packing_list, budget_breakdown, culture_phrases] = results.map(
+      (r) => r.data ?? "",
+    );
+    fetch(ZAPIER_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      body: JSON.stringify({
+        email: trip.email,
+        destination: trip.destination,
+        start_date: trip.startDate,
+        end_date: trip.endDate,
+        budget: String(trip.budget),
+        currency: trip.currency,
+        itinerary,
+        packing_list,
+        budget_breakdown,
+        culture_phrases,
+      }),
+    }).catch(() => {
+      sentRef.current = null;
+    });
+  }, [allDone, trip, tripKey, results]);
 
   return (
     <div className="min-h-screen w-full">
