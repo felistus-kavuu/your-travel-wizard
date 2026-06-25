@@ -169,6 +169,19 @@ export function TripForm() {
           {errors.interests && <p className="text-sm text-destructive">{errors.interests}</p>}
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="email">Email (optional)</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email to receive your trip plan."
+            className="h-12"
+          />
+          {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+        </div>
+
         <Button
           type="submit"
           size="lg"
