@@ -27,6 +27,7 @@ export function TripForm() {
   const [budget, setBudget] = useState<string>("");
   const [currency, setCurrency] = useState<Currency>("USD");
   const [interests, setInterests] = useState<Interest[]>([]);
+  const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toISO = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : "");
