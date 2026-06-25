@@ -26,13 +26,7 @@ export const tripSchema = z
     budget: z.number({ invalid_type_error: "Budget is required" }).positive("Budget must be greater than 0").max(10_000_000),
     currency: z.enum(CURRENCIES),
     interests: z.array(z.enum(INTERESTS)).min(1, "Pick at least one interest"),
-    email: z
-      .string()
-      .trim()
-      .max(255)
-      .email("Enter a valid email")
-      .optional()
-      .or(z.literal("").transform(() => undefined)),
+    email: z.string().trim().email("Enter a valid email").max(255).optional(),
   })
   .refine((v) => new Date(v.endDate) >= new Date(v.startDate), {
     message: "End date must be on or after start date",
