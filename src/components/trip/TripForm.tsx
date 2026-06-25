@@ -41,6 +41,7 @@ export function TripForm() {
       budget: Number(budget),
       currency,
       interests,
+      email: email.trim() || undefined,
     });
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
