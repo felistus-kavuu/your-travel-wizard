@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Backpack, CalendarDays, Globe, Plane, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TripSummaryBar } from "@/components/trip/TripSummaryBar";
 import { TabContent } from "@/components/trip/TabContent";
 import { clearTrip, loadTrip } from "@/lib/trip-storage";
-import type { Trip } from "@/lib/trip-types";
+import type { TabKind, Trip } from "@/lib/trip-types";
+
+const ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/27514763/42r20qz/";
+
+async function fetchTab(kind: TabKind, trip: Trip): Promise<string> {
+  const res = await fetch("/api/trip", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, trip }),
+  });
+  if (!res.ok) throw new Error("Failed");
+  const data = (await res.json()) as { text: string };
+  return data.text;
+}
 
 export const Route = createFileRoute("/trip")({
   head: () => ({
