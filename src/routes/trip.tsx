@@ -205,7 +205,23 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
           </Tabs>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+          <Button
+            type="button"
+            size="lg"
+            onClick={handleSendEmail}
+            disabled={!allDone || sending || !trip.email}
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            {sending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : sent ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Mail className="mr-2 h-4 w-4" />
+            )}
+            {sent ? "Email sent" : trip.email ? "Send to my email" : "Add email to send"}
+          </Button>
           <Button
             type="button"
             variant="outline"
