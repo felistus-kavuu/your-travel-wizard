@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Backpack, CalendarDays, Globe, Plane, RotateCcw, Wallet } from "lucide-react";
+import { Backpack, CalendarDays, Check, Globe, Loader2, Mail, Plane, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TripSummaryBar } from "@/components/trip/TripSummaryBar";
 import { TabContent } from "@/components/trip/TabContent";
+import { toast } from "sonner";
 import { clearTrip, loadTrip } from "@/lib/trip-storage";
 import type { TabKind, Trip } from "@/lib/trip-types";
 
@@ -69,6 +70,45 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
   });
   const allDone = results.every((r) => r.isSuccess);
   const sentRef = useRef<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const sections = () => {
+    const [itinerary, packing_list, budget_breakdown, culture_phrases] = results.map(
+      (r) => r.data ?? "",
+    );
+    return { itinerary, packing_list, budget_breakdown, culture_phrases };
+  };
+
+  const handleSendEmail = async () => {
+    if (!trip.email) {
+      toast.error("No email on file. Add one on the home page to receive your plan.");
+      return;
+    }
+    if (!allDone) {
+      toast.error("Please wait for all sections to finish generating.");
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await fetch("/api/send-trip-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: trip.email,
+          destination: trip.destination,
+          ...sections(),
+        }),
+      });
+      if (!res.ok) throw new Error("Send failed");
+      setSent(true);
+      toast.success(`Sent to ${trip.email}`);
+    } catch {
+      toast.error("Couldn't send the email. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   useEffect(() => {
     if (!allDone) return;
@@ -76,9 +116,7 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
     const sendKey = `${trip.email}|${tripKey}`;
     if (sentRef.current === sendKey) return;
     sentRef.current = sendKey;
-    const [itinerary, packing_list, budget_breakdown, culture_phrases] = results.map(
-      (r) => r.data ?? "",
-    );
+    const { itinerary, packing_list, budget_breakdown, culture_phrases } = sections();
     fetch(ZAPIER_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -98,7 +136,8 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
     }).catch(() => {
       sentRef.current = null;
     });
-  }, [allDone, trip, tripKey, results]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone, trip, tripKey]);
 
   return (
     <div className="min-h-screen w-full">
@@ -166,7 +205,23 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
           </Tabs>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
+          <Button
+            type="button"
+            size="lg"
+            onClick={handleSendEmail}
+            disabled={!allDone || sending || !trip.email}
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            {sending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : sent ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Mail className="mr-2 h-4 w-4" />
+            )}
+            {sent ? "Email sent" : trip.email ? "Send to my email" : "Add email to send"}
+          </Button>
           <Button
             type="button"
             variant="outline"
