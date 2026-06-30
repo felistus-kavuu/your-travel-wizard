@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TripRouteImport } from './routes/trip'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTripRouteImport } from './routes/api/trip'
+import { Route as ApiSendTripEmailRouteImport } from './routes/api/send-trip-email'
 
 const TripRoute = TripRouteImport.update({
   id: '/trip',
@@ -28,34 +29,43 @@ const ApiTripRoute = ApiTripRouteImport.update({
   path: '/api/trip',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSendTripEmailRoute = ApiSendTripEmailRouteImport.update({
+  id: '/api/send-trip-email',
+  path: '/api/send-trip-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/trip': typeof TripRoute
+  '/api/send-trip-email': typeof ApiSendTripEmailRoute
   '/api/trip': typeof ApiTripRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/trip': typeof TripRoute
+  '/api/send-trip-email': typeof ApiSendTripEmailRoute
   '/api/trip': typeof ApiTripRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/trip': typeof TripRoute
+  '/api/send-trip-email': typeof ApiSendTripEmailRoute
   '/api/trip': typeof ApiTripRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/trip' | '/api/trip'
+  fullPaths: '/' | '/trip' | '/api/send-trip-email' | '/api/trip'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/trip' | '/api/trip'
-  id: '__root__' | '/' | '/trip' | '/api/trip'
+  to: '/' | '/trip' | '/api/send-trip-email' | '/api/trip'
+  id: '__root__' | '/' | '/trip' | '/api/send-trip-email' | '/api/trip'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TripRoute: typeof TripRoute
+  ApiSendTripEmailRoute: typeof ApiSendTripEmailRoute
   ApiTripRoute: typeof ApiTripRoute
 }
 
@@ -82,24 +92,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTripRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/send-trip-email': {
+      id: '/api/send-trip-email'
+      path: '/api/send-trip-email'
+      fullPath: '/api/send-trip-email'
+      preLoaderRoute: typeof ApiSendTripEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TripRoute: TripRoute,
+  ApiSendTripEmailRoute: ApiSendTripEmailRoute,
   ApiTripRoute: ApiTripRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

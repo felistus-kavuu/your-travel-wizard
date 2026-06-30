@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Backpack, CalendarDays, Globe, Plane, RotateCcw, Wallet } from "lucide-react";
+import { Backpack, CalendarDays, Check, Globe, Loader2, Mail, Plane, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TripSummaryBar } from "@/components/trip/TripSummaryBar";
 import { TabContent } from "@/components/trip/TabContent";
+import { toast } from "sonner";
 import { clearTrip, loadTrip } from "@/lib/trip-storage";
 import type { TabKind, Trip } from "@/lib/trip-types";
 
