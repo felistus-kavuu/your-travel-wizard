@@ -42,6 +42,7 @@ export function TripForm() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = tripSchema.safeParse({
+      homeCountry: homeCountry.trim() || undefined,
       destination,
       startDate: toISO(startDate),
       endDate: toISO(endDate),
