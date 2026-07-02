@@ -59,7 +59,12 @@ function TripPage() {
 
 function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
   const tripKey = `${trip.destination}|${trip.startDate}|${trip.endDate}|${trip.budget}|${trip.currency}|${trip.interests.join(",")}`;
-  const kinds: TabKind[] = ["itinerary", "packing", "budget", "culture"];
+  const commaSegments = trip.destination.split(",").map((s) => s.trim()).filter(Boolean);
+  const altSegments = trip.destination.split(/;|\/|\band\b|->|→/i).map((s) => s.trim()).filter(Boolean);
+  const isMultiDestination = commaSegments.length >= 3 || altSegments.length >= 2;
+  const kinds: TabKind[] = isMultiDestination
+    ? ["itinerary", "packing", "budget", "culture", "route"]
+    : ["itinerary", "packing", "budget", "culture"];
   const results = useQueries({
     queries: kinds.map((k) => ({
       queryKey: ["trip", k, tripKey],
