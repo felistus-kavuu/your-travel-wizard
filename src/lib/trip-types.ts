@@ -15,7 +15,7 @@ export const INTERESTS = [
 ] as const;
 export type Interest = (typeof INTERESTS)[number];
 
-export const TAB_KINDS = ["itinerary", "packing", "budget", "culture"] as const;
+export const TAB_KINDS = ["itinerary", "packing", "budget", "culture", "route"] as const;
 export type TabKind = (typeof TAB_KINDS)[number];
 
 export const tripSchema = z
