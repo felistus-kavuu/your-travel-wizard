@@ -21,6 +21,7 @@ import { InterestPills } from "./InterestPills";
 
 export function TripForm() {
   const navigate = useNavigate();
+  const [homeCountry, setHomeCountry] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -41,6 +42,7 @@ export function TripForm() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = tripSchema.safeParse({
+      homeCountry: homeCountry.trim() || undefined,
       destination,
       startDate: toISO(startDate),
       endDate: toISO(endDate),
@@ -69,6 +71,21 @@ export function TripForm() {
       className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-[var(--shadow-card)]"
     >
       <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="homeCountry">Where are you traveling from?</Label>
+          <Input
+            id="homeCountry"
+            value={homeCountry}
+            onChange={(e) => setHomeCountry(e.target.value)}
+            placeholder="e.g. Nairobi, Kenya"
+            className="h-12"
+          />
+          <p className="text-xs text-muted-foreground">
+            Required for multi-destination trips so we can plan the best route home and back.
+          </p>
+          {errors.homeCountry && <p className="text-sm text-destructive">{errors.homeCountry}</p>}
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="destination">Destination(s)</Label>
           <Input
