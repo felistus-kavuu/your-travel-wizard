@@ -28,8 +28,8 @@ export const tripSchema = z
     interests: z.array(z.enum(INTERESTS)).min(1, "Pick at least one interest"),
     email: z.string().trim().email("Enter a valid email").max(255).optional(),
   })
-  .refine((v) => new Date(v.endDate) >= new Date(v.startDate), {
-    message: "End date must be on or after start date",
+  .refine((v) => new Date(v.endDate) > new Date(v.startDate), {
+    message: "End date must be after your start date.",
     path: ["endDate"],
   });
 
