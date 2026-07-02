@@ -60,5 +60,3 @@ export function buildPrompt(kind: TabKind, trip: Trip): { system: string; user: 
     }
   }
 }
-  }
-}
