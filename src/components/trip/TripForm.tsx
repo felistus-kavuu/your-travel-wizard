@@ -21,6 +21,7 @@ import { InterestPills } from "./InterestPills";
 
 export function TripForm() {
   const navigate = useNavigate();
+  const [homeCountry, setHomeCountry] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
