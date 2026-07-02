@@ -32,7 +32,19 @@ export const tripSchema = z
   .refine((v) => new Date(v.endDate) > new Date(v.startDate), {
     message: "End date must be after your start date.",
     path: ["endDate"],
-  });
+  })
+  .refine(
+    (v) => {
+      const commas = v.destination.split(",").map((s) => s.trim()).filter(Boolean);
+      const alts = v.destination.split(/;|\/|\band\b|->|→/i).map((s) => s.trim()).filter(Boolean);
+      const isMulti = commas.length >= 2 || alts.length >= 2;
+      return !isMulti || Boolean(v.homeCountry && v.homeCountry.length >= 2);
+    },
+    {
+      message: "Home country is required for multi-destination trips.",
+      path: ["homeCountry"],
+    },
+  );
 
 export type Trip = z.infer<typeof tripSchema>;
 
