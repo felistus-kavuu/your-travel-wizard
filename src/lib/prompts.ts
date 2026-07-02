@@ -46,5 +46,17 @@ export function buildPrompt(kind: TabKind, trip: Trip): { system: string; user: 
           `You are a local culture guide. ${sharedAssumptions} Trip details: Destination: ${trip.destination}. Provide: 5 essential local phrases with English meaning and simple pronunciation, 3 cultural etiquette tips (one do, one don't, one surprising custom), and 1 common tourist mistake to avoid. Keep it concise, friendly and practical. Format as Markdown with sections: **## Essential Phrases** (bullets — phrase — meaning — pronunciation), **## Etiquette** (Do / Don't / Surprising), and **## Tourist Mistake to Avoid**.`,
         user: ctx,
       };
+    case "route": {
+      const list = trip.destination
+        .split(/[,;/]|\band\b/i)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(", ");
+      return {
+        system:
+          `You are a travel route optimization expert. ${sharedAssumptions} The traveler wants to visit these destinations: ${list}. Their total trip runs from ${start} to ${end} with a budget of ${trip.budget} ${trip.currency}. Suggest the optimal order to visit these destinations to minimize travel time and cost. For each leg of the journey, include: the recommended transport mode (flight, train, bus, or ferry), estimated travel time, estimated cost in ${trip.currency}, and one money-saving tip. End with a total estimated transport budget and the percentage of the overall budget it represents. Format as Markdown with a bold heading for each leg (e.g. **Leg 1: A → B**) and a final "## Total Transport Budget" section.`,
+        user: ctx,
+      };
+    }
   }
 }

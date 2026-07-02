@@ -59,7 +59,12 @@ function TripPage() {
 
 function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
   const tripKey = `${trip.destination}|${trip.startDate}|${trip.endDate}|${trip.budget}|${trip.currency}|${trip.interests.join(",")}`;
-  const kinds: TabKind[] = ["itinerary", "packing", "budget", "culture"];
+  const commaSegments = trip.destination.split(",").map((s) => s.trim()).filter(Boolean);
+  const altSegments = trip.destination.split(/;|\/|\band\b|->|→/i).map((s) => s.trim()).filter(Boolean);
+  const isMultiDestination = commaSegments.length >= 3 || altSegments.length >= 2;
+  const kinds: TabKind[] = isMultiDestination
+    ? ["itinerary", "packing", "budget", "culture", "route"]
+    : ["itinerary", "packing", "budget", "culture"];
   const results = useQueries({
     queries: kinds.map((k) => ({
       queryKey: ["trip", k, tripKey],
@@ -162,7 +167,9 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
 
         <div className="mt-6">
           <Tabs defaultValue="itinerary" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 h-auto bg-secondary p-1 rounded-2xl">
+            <TabsList
+              className={`grid w-full ${isMultiDestination ? "grid-cols-5" : "grid-cols-4"} h-auto bg-secondary p-1 rounded-2xl`}
+            >
               <TabsTrigger
                 value="itinerary"
                 className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2.5 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm"
@@ -191,9 +198,18 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
                 <Globe className="h-4 w-4" />
                 <span className="text-xs sm:text-sm font-medium">Culture</span>
               </TabsTrigger>
+              {isMultiDestination && (
+                <TabsTrigger
+                  value="route"
+                  className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2.5 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm"
+                >
+                  <span className="text-base leading-none" aria-hidden>🗺️</span>
+                  <span className="text-xs sm:text-sm font-medium">Best Route</span>
+                </TabsTrigger>
+              )}
             </TabsList>
 
-            {(["itinerary", "packing", "budget", "culture"] as const).map((k) => (
+            {kinds.map((k) => (
               <TabsContent
                 key={k}
                 value={k}
