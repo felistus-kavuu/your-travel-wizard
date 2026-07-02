@@ -133,7 +133,7 @@ export function TripForm() {
                   selected={endDate}
                   onSelect={setEndDate}
                   initialFocus
-                  fromDate={minEndDate}
+                  disabled={minEndDate ? { before: minEndDate } : undefined}
                   className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
