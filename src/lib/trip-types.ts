@@ -20,6 +20,7 @@ export type TabKind = (typeof TAB_KINDS)[number];
 
 export const tripSchema = z
   .object({
+    homeCountry: z.string().trim().max(120).optional(),
     destination: z.string().trim().min(2, "Destination is required").max(120),
     startDate: z.string().min(1, "Start date is required"), // ISO yyyy-mm-dd
     endDate: z.string().min(1, "End date is required"),
