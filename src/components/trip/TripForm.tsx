@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { CalendarIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,12 @@ export function TripForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const toISO = (d?: Date) => (d ? format(d, "yyyy-MM-dd") : "");
+  const minEndDate = startDate ? addDays(startDate, 1) : undefined;
+  const dateRangeError =
+    startDate && endDate && endDate <= startDate
+      ? "End date must be after your start date."
+      : undefined;
+  const datesValid = Boolean(startDate && endDate && !dateRangeError);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,6 +117,7 @@ export function TripForm() {
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={!startDate}
                   className={cn(
                     "h-12 w-full justify-start text-left font-normal",
                     !endDate && "text-muted-foreground",
@@ -126,11 +133,14 @@ export function TripForm() {
                   selected={endDate}
                   onSelect={setEndDate}
                   initialFocus
+                  fromDate={minEndDate}
                   className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
-            {errors.endDate && <p className="text-sm text-destructive">{errors.endDate}</p>}
+            {(dateRangeError || errors.endDate) && (
+              <p className="text-sm text-destructive">{dateRangeError || errors.endDate}</p>
+            )}
           </div>
         </div>
 
@@ -185,6 +195,7 @@ export function TripForm() {
         <Button
           type="submit"
           size="lg"
+          disabled={!datesValid}
           className="h-14 w-full bg-accent text-accent-foreground hover:bg-accent/90 shadow-[var(--shadow-gold)] text-base font-semibold"
         >
           <Sparkles className="mr-2 h-5 w-5" />
