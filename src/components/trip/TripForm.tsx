@@ -72,6 +72,21 @@ export function TripForm() {
     >
       <div className="space-y-6">
         <div className="space-y-2">
+          <Label htmlFor="homeCountry">Where are you traveling from?</Label>
+          <Input
+            id="homeCountry"
+            value={homeCountry}
+            onChange={(e) => setHomeCountry(e.target.value)}
+            placeholder="e.g. Nairobi, Kenya"
+            className="h-12"
+          />
+          <p className="text-xs text-muted-foreground">
+            Required for multi-destination trips so we can plan the best route home and back.
+          </p>
+          {errors.homeCountry && <p className="text-sm text-destructive">{errors.homeCountry}</p>}
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="destination">Destination(s)</Label>
           <Input
             id="destination"
