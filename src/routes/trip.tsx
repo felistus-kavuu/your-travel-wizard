@@ -85,29 +85,37 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
     return { itinerary, packing_list, budget_breakdown, culture_phrases };
   };
 
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   const handleSendEmail = async () => {
-    if (!trip.email) {
-      toast.error("No email on file. Add one on the home page to receive your plan.");
+    const userEmail = trip.email?.trim();
+    if (!userEmail) {
+      setEmailError("Please enter your email address");
+      toast.error("Please enter your email address");
       return;
     }
+    setEmailError(null);
     if (!allDone) {
       toast.error("Please wait for all sections to finish generating.");
       return;
     }
     setSending(true);
     try {
+      const payload = {
+        email: userEmail,
+        destination: trip.destination,
+        ...sections(),
+      };
+      console.log("[send-trip-email] using email:", userEmail);
+      console.log("[send-trip-email] payload:", payload);
       const res = await fetch("/api/send-trip-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: trip.email,
-          destination: trip.destination,
-          ...sections(),
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Send failed");
       setSent(true);
-      toast.success(`Sent to ${trip.email}`);
+      toast.success(`Sent to ${userEmail}`);
     } catch {
       toast.error("Couldn't send the email. Please try again.");
     } finally {
