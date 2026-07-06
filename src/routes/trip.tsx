@@ -8,6 +8,7 @@ import { TripSummaryBar } from "@/components/trip/TripSummaryBar";
 import { TabContent } from "@/components/trip/TabContent";
 import { toast } from "sonner";
 import { clearTrip, loadTrip } from "@/lib/trip-storage";
+import { sendTripEmail } from "@/lib/email/send-trip-email";
 import type { TabKind, Trip } from "@/lib/trip-types";
 
 const ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/27514763/42r20qz/";
@@ -101,33 +102,12 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
     }
     setSending(true);
     try {
-      const payload = {
+      console.log("[send-trip-email] using email:", userEmail);
+      await sendTripEmail({
         email: userEmail,
         destination: trip.destination,
         ...sections(),
-      };
-      console.log("[send-trip-email] using email:", userEmail);
-      console.log("[send-trip-email] payload:", payload);
-      const res = await fetch("/api/send-trip-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       });
-      const body = await res.json().catch(() => ({}) as Record<string, unknown>);
-      if (!res.ok) {
-        console.error("[send-trip-email] failed", res.status, body);
-        let detailMsg = "";
-        const details = (body as { details?: unknown }).details;
-        if (typeof details === "string") {
-          try {
-            const parsed = JSON.parse(details) as { message?: string };
-            detailMsg = parsed.message ?? details;
-          } catch {
-            detailMsg = details;
-          }
-        }
-        throw new Error(detailMsg || (body as { error?: string }).error || `HTTP ${res.status}`);
-      }
       setSent(true);
       toast.success(`Sent to ${userEmail}`);
     } catch (err) {
