@@ -229,33 +229,38 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
           </Tabs>
         </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
-          <Button
-            type="button"
-            size="lg"
-            onClick={handleSendEmail}
-            disabled={!allDone || sending || !trip.email}
-            className="bg-accent text-accent-foreground hover:bg-accent/90"
-          >
-            {sending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : sent ? (
-              <Check className="mr-2 h-4 w-4" />
-            ) : (
-              <Mail className="mr-2 h-4 w-4" />
-            )}
-            {sent ? "Email sent" : trip.email ? "Send to my email" : "Add email to send"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={onReset}
-            className="border-navy/20 text-navy hover:bg-navy hover:text-navy-foreground"
-          >
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Plan Another Trip
-          </Button>
+        <div className="mt-8 flex flex-col items-center gap-3">
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <Button
+              type="button"
+              size="lg"
+              onClick={handleSendEmail}
+              disabled={!allDone || sending}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {sending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : sent ? (
+                <Check className="mr-2 h-4 w-4" />
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
+              {sent ? "Email sent" : "Send to my email"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={onReset}
+              className="border-navy/20 text-navy hover:bg-navy hover:text-navy-foreground"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Plan Another Trip
+            </Button>
+          </div>
+          {emailError && (
+            <p className="text-sm text-destructive" role="alert">{emailError}</p>
+          )}
         </div>
       </div>
     </div>
