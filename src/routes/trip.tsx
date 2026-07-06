@@ -113,11 +113,27 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Send failed");
+      const body = await res.json().catch(() => ({}) as Record<string, unknown>);
+      if (!res.ok) {
+        console.error("[send-trip-email] failed", res.status, body);
+        let detailMsg = "";
+        const details = (body as { details?: unknown }).details;
+        if (typeof details === "string") {
+          try {
+            const parsed = JSON.parse(details) as { message?: string };
+            detailMsg = parsed.message ?? details;
+          } catch {
+            detailMsg = details;
+          }
+        }
+        throw new Error(detailMsg || (body as { error?: string }).error || `HTTP ${res.status}`);
+      }
       setSent(true);
       toast.success(`Sent to ${userEmail}`);
-    } catch {
-      toast.error("Couldn't send the email. Please try again.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      console.error("[send-trip-email] error:", msg);
+      toast.error(msg, { duration: 10000 });
     } finally {
       setSending(false);
     }
