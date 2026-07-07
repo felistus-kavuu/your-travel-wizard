@@ -112,9 +112,10 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
       toast.success("Your trip plan has been sent to your email 🧳");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
-      console.error("[send-trip-email] error:", msg);
-      toast.error("Couldn't send email — please check your email address and try again.");
-
+      console.error("[send-trip-email] full error:", err);
+      console.error("[send-trip-email] error message:", msg);
+      setEmailError(msg);
+      toast.error(msg);
     } finally {
       setSending(false);
     }
