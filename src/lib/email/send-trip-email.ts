@@ -10,7 +10,7 @@ export interface SendTripEmailParams {
 }
 
 const SERVICE_ID = "service_b1n3mqn";
-const TEMPLATE_ID = "TSs2iVhXXNuGke764";
+const TEMPLATE_ID = "template_gzg4i33";
 const PUBLIC_KEY = "TSs2iVhXXNuGke764";
 
 let emailJsInitialized = false;
