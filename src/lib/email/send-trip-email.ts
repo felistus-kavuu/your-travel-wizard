@@ -13,6 +13,20 @@ const SERVICE_ID = "service_b1n3mqn";
 const TEMPLATE_ID = "TSs2iVhXXNuGke764";
 const PUBLIC_KEY = "TSs2iVhXXNuGke764";
 
+let emailJsInitialized = false;
+
+function getEmailJsErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const maybeError = error as { text?: unknown; message?: unknown; status?: unknown };
+    if (typeof maybeError.text === "string" && maybeError.text.trim()) return maybeError.text;
+    if (typeof maybeError.message === "string" && maybeError.message.trim()) return maybeError.message;
+    if (maybeError.status) return `EmailJS error status ${String(maybeError.status)}`;
+  }
+  if (typeof error === "string" && error.trim()) return error;
+  return "EmailJS returned an unknown error";
+}
+
 export async function sendTripEmail(params: SendTripEmailParams): Promise<void> {
   const templateParams = {
     user_email: params.email,
@@ -23,7 +37,40 @@ export async function sendTripEmail(params: SendTripEmailParams): Promise<void> 
     culture_phrases: params.culture_phrases,
   };
 
-  console.log("[send-trip-email] EmailJS payload:", templateParams);
+  console.log("[send-trip-email] EmailJS import status:", {
+    imported: Boolean(emailjs),
+    hasInit: typeof emailjs?.init === "function",
+    hasSend: typeof emailjs?.send === "function",
+    initialized: emailJsInitialized,
+  });
 
-  await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, { publicKey: PUBLIC_KEY });
+  if (!emailJsInitialized) {
+    emailjs.init({ publicKey: PUBLIC_KEY });
+    emailJsInitialized = true;
+    console.log("[send-trip-email] EmailJS initialized:", {
+      initialized: emailJsInitialized,
+      publicKey: PUBLIC_KEY,
+    });
+  }
+
+  console.log("[send-trip-email] EmailJS config and template parameters:", {
+    serviceId: SERVICE_ID,
+    templateId: TEMPLATE_ID,
+    publicKey: PUBLIC_KEY,
+    templateParams,
+  });
+
+  try {
+    const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, { publicKey: PUBLIC_KEY });
+    console.log("[send-trip-email] EmailJS success response:", response);
+  } catch (error) {
+    const maybeError = error as { status?: unknown; text?: unknown; message?: unknown };
+    console.error("[send-trip-email] EmailJS full error object:", error);
+    console.error("[send-trip-email] EmailJS error details:", {
+      status: maybeError?.status,
+      text: maybeError?.text,
+      message: maybeError?.message,
+    });
+    throw new Error(getEmailJsErrorMessage(error));
+  }
 }
