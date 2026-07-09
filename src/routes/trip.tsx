@@ -102,11 +102,24 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
     }
     setSending(true);
     try {
-      console.log("[send-trip-email] using email:", userEmail);
+      const { itinerary, packing_list, budget_breakdown, culture_phrases } = sections();
+      const templateParams = {
+        user_email: userEmail,
+        destination: trip.destination,
+        itinerary,
+        packing_list,
+        budget_breakdown,
+        culture_phrases,
+      };
+      console.log("[send-trip-email] templateParams being sent:", templateParams);
+      console.log("[send-trip-email] user_email value:", templateParams.user_email);
       await sendTripEmail({
         email: userEmail,
         destination: trip.destination,
-        ...sections(),
+        itinerary,
+        packing_list,
+        budget_breakdown,
+        culture_phrases,
       });
       setSent(true);
       toast.success("Your trip plan has been sent to your email 🧳");
