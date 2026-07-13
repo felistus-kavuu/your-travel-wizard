@@ -28,14 +28,24 @@ function getEmailJsErrorMessage(error: unknown): string {
 }
 
 export async function sendTripEmail(params: SendTripEmailParams): Promise<void> {
+  const recipient = params.email?.trim();
+  if (!recipient) {
+    throw new Error("Recipient email is empty — please enter your email on the previous screen.");
+  }
   const templateParams = {
-    user_email: params.email,
+    // Send under every common EmailJS recipient variable name so whichever
+    // one the template's "To Email" field references gets populated.
+    user_email: recipient,
+    to_email: recipient,
+    email: recipient,
+    reply_to: recipient,
     destination: params.destination,
     itinerary: params.itinerary,
     packing_list: params.packing_list,
     budget_breakdown: params.budget_breakdown,
     culture_phrases: params.culture_phrases,
   };
+
 
   console.log("[send-trip-email] EmailJS import status:", {
     imported: Boolean(emailjs),
