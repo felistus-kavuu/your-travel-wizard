@@ -21,7 +21,6 @@ import { InterestPills } from "./InterestPills";
 
 export function TripForm() {
   const navigate = useNavigate();
-  const [homeCountry, setHomeCountry] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -42,7 +41,6 @@ export function TripForm() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = tripSchema.safeParse({
-      homeCountry: homeCountry.trim() || undefined,
       destination,
       startDate: toISO(startDate),
       endDate: toISO(endDate),
@@ -72,18 +70,18 @@ export function TripForm() {
     >
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="homeCountry">Where are you traveling from?</Label>
+          <Label htmlFor="destination">Destination(s)</Label>
           <Input
-            id="homeCountry"
-            value={homeCountry}
-            onChange={(e) => setHomeCountry(e.target.value)}
-            placeholder="e.g. Nairobi, Kenya"
+            id="destination"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            placeholder="e.g. Paris, Rome, Barcelona"
             className="h-12"
           />
           <p className="text-xs text-muted-foreground">
-            Required for multi-destination trips so we can plan the best route home and back.
+            Add multiple destinations separated by commas to unlock the Best Route tab.
           </p>
-          {errors.homeCountry && <p className="text-sm text-destructive">{errors.homeCountry}</p>}
+          {errors.destination && <p className="text-sm text-destructive">{errors.destination}</p>}
         </div>
 
         <div className="space-y-2">
