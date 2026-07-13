@@ -84,21 +84,6 @@ export function TripForm() {
           {errors.destination && <p className="text-sm text-destructive">{errors.destination}</p>}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="destination">Destination(s)</Label>
-          <Input
-            id="destination"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="e.g. Paris, Rome, Barcelona"
-            className="h-12"
-          />
-          <p className="text-xs text-muted-foreground">
-            Add multiple destinations separated by commas to unlock the Best Route tab.
-          </p>
-          {errors.destination && <p className="text-sm text-destructive">{errors.destination}</p>}
-        </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Start Date</Label>
