@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { generateText } from "ai";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { buildPrompt } from "@/lib/prompts";
 import { tripRequestSchema } from "@/lib/trip-types";
 
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/trip")({
           );
         }
 
-        const key = process.env.LOVABLE_API_KEY;
+        const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
         if (!key) {
           return Response.json({ error: "AI is not configured" }, { status: 500 });
         }
@@ -31,9 +31,8 @@ export const Route = createFileRoute("/api/trip")({
         const { system, user } = buildPrompt(kind, trip);
 
         try {
-          const gateway = createLovableAiGatewayProvider(key);
-          const modelId = kind === "itinerary" ? "openai/gpt-5-mini" : "google/gemini-3-flash-preview";
-          const model = gateway(modelId);
+          const google = createGoogleGenerativeAI({ apiKey: key });
+          const model = google("gemini-2.5-flash");
           const result = await generateText({
             model,
             system,
