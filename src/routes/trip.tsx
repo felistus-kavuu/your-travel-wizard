@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Backpack, CalendarDays, Check, Globe, Loader2, Mail, Plane, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
