@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Backpack, CalendarDays, Check, Globe, Loader2, Mail, Plane, RotateCcw, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -66,27 +66,26 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
   const kinds: TabKind[] = isMultiDestination
     ? ["itinerary", "packing", "budget", "culture", "route"]
     : ["itinerary", "packing", "budget", "culture"];
-  const results = useQueries({
-    queries: kinds.map((k) => ({
-      queryKey: ["trip", k, tripKey],
-      queryFn: () => fetchTab(k, trip),
-      staleTime: Infinity,
-      retry: 0,
-    })),
-  });
-  const allDone = results.every((r) => r.isSuccess);
+  const queryClient = useQueryClient();
   const sentRef = useRef<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-  const sections = () => {
-    const [itinerary, packing_list, budget_breakdown, culture_phrases] = results.map(
-      (r) => r.data ?? "",
+  const fetchAllSections = async () => {
+    const coreKinds: TabKind[] = ["itinerary", "packing", "budget", "culture"];
+    const [itinerary, packing_list, budget_breakdown, culture_phrases] = await Promise.all(
+      coreKinds.map((k) =>
+        queryClient.fetchQuery({
+          queryKey: ["trip", k, tripKey],
+          queryFn: () => fetchTab(k, trip),
+          staleTime: Infinity,
+          retry: 0,
+        }),
+      ),
     );
     return { itinerary, packing_list, budget_breakdown, culture_phrases };
   };
-
-  const [emailError, setEmailError] = useState<string | null>(null);
 
   const handleSendEmail = async () => {
     const userEmail = trip.email?.trim();
@@ -96,13 +95,9 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
       return;
     }
     setEmailError(null);
-    if (!allDone) {
-      toast.error("Please wait for all sections to finish generating.");
-      return;
-    }
     setSending(true);
     try {
-      const { itinerary, packing_list, budget_breakdown, culture_phrases } = sections();
+      const { itinerary, packing_list, budget_breakdown, culture_phrases } = await fetchAllSections();
       const templateParams = {
         user_email: userEmail,
         destination: trip.destination,
@@ -112,7 +107,6 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
         culture_phrases,
       };
       console.log("[send-trip-email] templateParams being sent:", templateParams);
-      console.log("[send-trip-email] user_email value:", templateParams.user_email);
       await sendTripEmail({
         email: userEmail,
         destination: trip.destination,
@@ -123,10 +117,34 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
       });
       setSent(true);
       toast.success("Your trip plan has been sent to your email 🧳");
+
+      // Fire-and-forget Zapier webhook, once per (email, trip)
+      const sendKey = `${userEmail}|${tripKey}`;
+      if (sentRef.current !== sendKey) {
+        sentRef.current = sendKey;
+        fetch(ZAPIER_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          mode: "no-cors",
+          body: JSON.stringify({
+            email: userEmail,
+            destination: trip.destination,
+            start_date: trip.startDate,
+            end_date: trip.endDate,
+            budget: String(trip.budget),
+            currency: trip.currency,
+            itinerary,
+            packing_list,
+            budget_breakdown,
+            culture_phrases,
+          }),
+        }).catch(() => {
+          sentRef.current = null;
+        });
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       console.error("[send-trip-email] full error:", err);
-      console.error("[send-trip-email] error message:", msg);
       setEmailError(msg);
       toast.error(msg);
     } finally {
@@ -134,34 +152,6 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
     }
   };
 
-  useEffect(() => {
-    if (!allDone) return;
-    if (!trip.email) return;
-    const sendKey = `${trip.email}|${tripKey}`;
-    if (sentRef.current === sendKey) return;
-    sentRef.current = sendKey;
-    const { itinerary, packing_list, budget_breakdown, culture_phrases } = sections();
-    fetch(ZAPIER_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      mode: "no-cors",
-      body: JSON.stringify({
-        email: trip.email,
-        destination: trip.destination,
-        start_date: trip.startDate,
-        end_date: trip.endDate,
-        budget: String(trip.budget),
-        currency: trip.currency,
-        itinerary,
-        packing_list,
-        budget_breakdown,
-        culture_phrases,
-      }),
-    }).catch(() => {
-      sentRef.current = null;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allDone, trip, tripKey]);
 
   return (
     <div className="min-h-screen w-full">
@@ -246,7 +236,7 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
               type="button"
               size="lg"
               onClick={handleSendEmail}
-              disabled={!allDone || sending}
+              disabled={sending}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
               {sending ? (

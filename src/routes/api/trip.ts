@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/trip")({
 
         try {
           const google = createGoogleGenerativeAI({ apiKey: key });
-          const model = google("gemini-2.5-flash");
+          const model = google("gemini-2.5-flash-lite");
           const result = await generateText({
             model,
             system,
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/trip")({
           }
           console.error("[trip api] generation failed", err);
           return Response.json(
-            { error: String(err) },
+            { error: "Something went wrong generating this. Please retry." },
             { status: 500 },
           );
         }
