@@ -236,7 +236,7 @@ function TripPageInner({ trip, onReset }: { trip: Trip; onReset: () => void }) {
               type="button"
               size="lg"
               onClick={handleSendEmail}
-              disabled={!allDone || sending}
+              disabled={sending}
               className="bg-accent text-accent-foreground hover:bg-accent/90"
             >
               {sending ? (
