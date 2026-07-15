@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/trip")({
           }
           console.error("[trip api] generation failed", err);
           return Response.json(
-            { error: "Something went wrong generating this. Please retry." },
+            { error: String(err) },
             { status: 500 },
           );
         }
