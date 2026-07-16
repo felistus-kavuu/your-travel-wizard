@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/trip")({
 
         try {
           const google = createGoogleGenerativeAI({ apiKey: key });
-          const model = google("gemini-2.5-flash-lite");
+          const model = google("gemini-3-flash-preview");
           const result = await generateText({
             model,
             system,
