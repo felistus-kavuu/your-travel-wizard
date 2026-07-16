@@ -37,6 +37,13 @@ export const Route = createFileRoute("/api/trip")({
             model,
             system,
             prompt: user,
+            providerOptions: {
+              google: {
+                thinkingConfig: {
+                  thinkingLevel: "low",
+                },
+              },
+            },
           });
           return Response.json({ text: result.text });
         } catch (err: unknown) {
